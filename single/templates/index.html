@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations</title>
+    <style>
+        table { border-collapse: collapse; width: 100%; }
+        th, td { border: 1px solid black; padding: 8px; text-align: center; }
+        .message { padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+        .success { background-color: #d4edda; color: #155724; }
+        .error { background-color: #f8d7da; color: #721c24; }
+    </style>
+    <script>
+        function setUserName(event) {
+            fetch('/set_name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'user_name=' + encodeURIComponent(event.target.value)
+            });
+        }
+
+        // // Auto-hide messages after 3 seconds
+        // setTimeout(() => {
+        //     let messages = document.querySelectorAll('.message');
+        //     messages.forEach(msg => msg.style.display = 'none');
+        // }, 3000);
+    </script>
+</head>
+<body>
+    <h1>Reserve a Time Slot</h1>
+
+    <!-- Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="message {{ category }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+
+    <label for="user_name">Your Name:</label>
+    <input type="text" name="user_name" value="{{ current_user }}" required oninput="setUserName(event)">
+
+    <h2>Reservations</h2>
+    <table>
+        <tr>
+            <th>Time Slot (ET)</th>
+            <th>Reservee 1</th>
+            <th>Reservee 2</th>
+            <th>Reservee 3</th>
+            <th>Reservee 4</th>
+            <th>Reservee 5</th>
+        </tr>
+        {% for time, names in reservations_dict.items() %}
+        <tr>
+            <td>{{ time.strftime('%Y-%m-%d %I:%M %p ET') }}</td>
+            {% set claimed = namespace(value=False) %}
+            {% for i in range(5) %}
+                <td>
+                    {% if names|length > i %}
+                        {{ names[i] }}
+                        <form method="POST" style="display:inline;">
+                            <input type="hidden" name="reservation_id" value="{{ time }}">
+                            <input type="hidden" name="user_name" value="{{ names[i] }}">
+                            <button type="submit" name="cancel">Cancel</button>
+                        </form>
+                    {% elif not claimed.value %}
+                        <form method="POST">
+                            <input type="hidden" name="selected_time" value="{{ time.strftime('%Y-%m-%d %H:%M:%S') }}">
+                            <input type="hidden" name="user_name" value="{{ current_user }}">
+                            <button type="submit" name="reserve">Claim</button>
+                        </form>
+                        {% set claimed.value = True %}
+                    {% endif %}
+                </td>
+            {% endfor %}
+        </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>

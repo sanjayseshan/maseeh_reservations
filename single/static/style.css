@@ -1,0 +1,68 @@
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f4f4f4;
+}
+
+form {
+    background: white;
+    padding: 20px;
+    display: inline-block;
+    border-radius: 8px;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+label, select, input, button {
+    display: block;
+    margin: 10px auto;
+    padding: 10px;
+}
+
+table {
+    width: 80%;
+    margin: 20px auto;
+    border-collapse: collapse;
+    background: white;
+    box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+}
+
+th, td {
+    padding: 10px;
+    border: 1px solid #ccc;
+}
+
+th {
+    background: #007BFF;
+    color: white;
+}
+
+tr:nth-child(even) {
+    background: #f2f2f2;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.flash {
+    padding: 10px;
+    margin: 10px auto;
+    width: 50%;
+    border-radius: 5px;
+}
+
+.flash.success {
+    background-color: #28a745;
+    color: white;
+}
+
+.flash.danger {
+    background-color: #dc3545;
+    color: white;
+}
+
+.flash.info {
+    background-color: #17a2b8;
+    color: white;
+}

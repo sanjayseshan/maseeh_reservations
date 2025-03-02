@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reservations</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th,
+        td {
+            border: 1px solid black;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .message {
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .success {
+            background-color: #d4edda;
+            color: #155724;
+        }
+
+        .error {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .tabs {
+            display: flex;
+        }
+
+        .tabs button {
+            padding: 10px 20px;
+            margin-right: 10px;
+        }
+    </style>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css"
+        integrity="sha384-9aIt2nRpC12Uk9gS9baDl411NQApFmC26EwAOH8WgZl5MYYxFfc+NcPb1dKGj7Sk" crossorigin="anonymous">
+
+
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static',filename='style.css') }}">
+
+    <script>
+        function setUserName(event) {
+            fetch('/set_name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'user_name=' + encodeURIComponent(event.target.value)
+            });
+        }
+
+        // Auto-hide messages after 3 seconds
+        // setTimeout(() => {
+        //     let messages = document.querySelectorAll('.message');
+        //     messages.forEach(msg => msg.style.display = 'none');
+        // }, 3000);
+    </script>
+</head>
+
+<body>
+    <div id="topbar">
+        <div class="topbar" id="myTopbar"
+            style="width:100%; height:35px; background-color:#0A122A; top:0;align-items: center;">
+
+            <i style="color:white; position: relative; margin:auto;padding: 10px;top:8px;">Maseeh Reservations</i>
+            <script>
+
+                document.getElementById('lang').value = language
+
+                q = window.location.search
+                function getParameterByName(name, url) {
+                    if (!url) url = window.location.href;
+                    name = name.replace(/[\[\]]/g, "\\$&");
+                    var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+                        results = regex.exec(url);
+                    if (!results) return null;
+                    if (!results[2]) return '';
+                    return decodeURIComponent(results[2].replace(/\+/g, " "));
+                }
+                function changelang(val) {
+                    if (window.location.search == "") {
+                        window.location.search = "?lang=" + val
+                    } else {
+                        window.location.search = window.location.search.split("&lang=")[0] + "&lang=" + val + "&" + window.location.search.split(language + "&")[1]
+                    }
+                }
+            </script>
+
+
+        </div>
+    </div><br>
+    <div id="topbar">
+        <div class="topnav responsive" id="myTopnav" style="width:100%">
+            <a href="/select_room/media_room">Media Room</a>
+            <a href="/select_room/craft_dance_room">Craft/Dance Room</a>
+            <a href="/select_room/kitchen">Kitchen</a>
+            <a href="/select_room/music_room">Music Room</a>
+            <a href="javascript:void(0);" style="font-size:15px;" class="icon" onclick="myFunction()">&#9776;</a>
+        </div>
+        <script>
+            function myFunction() {
+                var x = document.getElementById("myTopnav");
+                if (x.className === "topnav") {
+                    x.className += " responsive";
+                } else {
+                    x.className = "topnav";
+                }
+            }
+        </script>
+    </div><br>
+    <!-- <div class="tabs">
+        <button onclick="window.location.href='/select_room/media_room'">Media Room</button>
+        <button onclick="window.location.href='/select_room/craft_dance_room'">Craft/Dance Room</button>
+        <button onclick="window.location.href='/select_room/kitchen'">Kitchen</button>
+        <button onclick="window.location.href='/select_room/music_room'">Music Room</button>
+    </div> -->
+
+    <section>
+        <h1>Reserve a Time Slot</h1>
+
+        <!-- Flash Messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+        {% for category, message in messages %}
+        <div class="message {{ category }}">
+            {{ message }}
+        </div>
+        {% endfor %}
+        {% endif %}
+        {% endwith %}
+
+        {% if message %}
+        <div class="message {{ 'success' if message_type == 'success' else 'error' }}">
+            {{ message }}
+        </div>
+        {% endif %}
+
+    </section>
+
+
+
+    <section>
+        <h2>Reservations for {{ room.replace('_', ' ').title() }}</h2>
+    </section>
+    <!-- <form method="POST">
+        <label for="user_name">Your Name:</label>
+        <input type="text" name="user_name" value="{{ current_user }}" required>
+        <button type="submit" name="set_name">Set Name</button>
+    </form> -->
+    <section>
+
+        <label for="user_name">Your kerb:</label>
+        <input type="text" name="user_name" class="form-control" value="{{ current_user }}" required
+            oninput="setUserName(event)">
+    </section>
+
+    <section>
+
+
+        <h3>Time Slots</h3>
+        <table>
+            <tr>
+                <th>Time Slot (ET)</th>
+                <th>Reservee 1</th>
+                <th>Reservee 2</th>
+                <th>Reservee 3</th>
+                <th>Reservee 4</th>
+                <th>Reservee 5</th>
+            </tr>
+            {% for time, names in reservations_dict.items() %}
+            <tr>
+                <td>{{ time.strftime('%Y-%m-%d %I:%M %p ET') }}</td>
+                {% set claimed = namespace(value=False) %}
+                {% for i in range(5) %}
+                <td>
+                    {% if names|length > i %}
+                    {{ names[i] }}
+                    <form method="POST" style="display:inline;">
+                        <input type="hidden" name="reservation_id" value="{{ time }}">
+                        <input type="hidden" name="user_name" value="{{ names[i] }}">
+                        {% if names[i] == current_user %}
+                        <button class="btn btn-danger" type="submit" name="cancel">Cancel</button>
+                        {% endif %}
+
+                    </form>
+                    {% elif not claimed.value %}
+                    <form method="POST">
+                        <input type="hidden" name="selected_time" value="{{ time.strftime('%Y-%m-%d %H:%M:%S') }}">
+                        <input type="hidden" name="user_name" value="{{ current_user }}">
+                        <button class="btn btn-success" type="submit" name="reserve">Claim</button>
+                    </form>
+                    {% set claimed.value = True %}
+                    {% endif %}
+                </td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </table>
+    </section>
+    <div id="footer">
+        <div class="navbar">
+            <center>
+                <p style="margin-bottom: 0;">MHEC</p>
+            </center>
+        </div>
+    </div>
+</body>
+
+</html>
