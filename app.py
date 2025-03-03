@@ -120,6 +120,9 @@ def index():
     # Handle reservation logic
     if request.method == "POST":
         if "password" in request.form:
+            session["user_name"] = request.form["user_name"]
+            session["password"] = request.form["password"]
+
             username = session.get("user_name", "")
             password = session.get("password", "")
             # username = request.form["username"]
@@ -235,6 +238,7 @@ def index():
 @app.route("/set_name", methods=["POST"])
 def set_name():
     session["user_name"] = request.form["user_name"]
+
     # flash("Your name has been set!", "success")
     return jsonify(success=True)
 
