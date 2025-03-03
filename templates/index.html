@@ -18,7 +18,7 @@
             text-align: center;
         }
 
-        .message {
+        .message, .message2 {
             padding: 10px;
             margin-bottom: 10px;
             border-radius: 5px;
@@ -69,10 +69,22 @@
             console.log(event.target.value)
         }
         // Auto-hide messages after 3 seconds
-        // setTimeout(() => {
-        //     let messages = document.querySelectorAll('.message');
-        //     messages.forEach(msg => msg.style.display = 'none');
-        // }, 3000);
+        setTimeout(() => {
+            let messages = document.querySelectorAll('.message');
+            messages.forEach(msg => msg.style.display = 'none');
+        }, 3000);
+
+        function storeScrollPosition() {
+            sessionStorage.setItem('scrollPosition', window.pageYOffset);
+        }
+
+        window.onload = function() {
+            const scrollPosition = sessionStorage.getItem('scrollPosition');
+            if (scrollPosition !== null) {
+                window.scrollTo(0, scrollPosition);
+                sessionStorage.removeItem('scrollPosition');
+            }
+        }
     </script>
 </head>
 
@@ -141,7 +153,11 @@
         {% with messages = get_flashed_messages(with_categories=true) %}
         {% if messages %}
         {% for category, message in messages %}
-        <div class="message {{ category }}">
+        <div class="message {{ category }}"  style="position:fixed;top:20px;">
+            {{ message }}
+        </div>
+        
+        <div class="message2 {{ category }}"  >
             {{ message }}
         </div>
         {% endfor %}
@@ -149,7 +165,10 @@
         {% endwith %}
 
         {% if message %}
-        <div class="message {{ 'success' if message_type == 'success' else 'error' }}">
+        <div class="message {{ 'success' if message_type == 'success' else 'error' }}"   style="position:fixed;top:20px;">
+            {{ message }}
+        </div>
+        <div class="message2 {{ 'success' if message_type == 'success' else 'error' }}"  >
             {{ message }}
         </div>
         {% endif %}
@@ -159,34 +178,55 @@
 
 
     <section>
-        <h2>Reservations for {{ room.replace('_', ' ').title() }}</h2>
+        <h2>Reservations for <b>{{ room.replace('_', ' ').title() }}</b></h2>
     </section>
 
     <section>
 
         <form method="POST">
-            <label for="user_name">Your kerb:</label>
+            <label for="user_name">Your kerb (without @mit.edu):</label>
             <input type="text" name="user_name" class="form-control" value="{{ current_user }}" required
                 oninput="setUserName(event)">
             <label for="user_name">Pin:</label>
             <input type="number" name="password" class="form-control" value="{{ password }}" required
                 oninput="setPassword(event)">
-        
+
             <!-- <label for="user_name">Your Name:</label>
             <input type="text" name="user_name" value="{{ current_user }}" required> -->
-            <button type="submit" name="set_name" class="btn btn-success">Sign in or Create account</button>
+            <button type="submit" name="set_name" class="btn btn-success">Sign in or Register</button>
         </form>
+        <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
 
-        </section>
+    </section>
 
-        {% if (current_user == "MHEC") and loggedin %}
-        <section><h2>Users</h2></section>
-        <section>
-            {% for username, password in accounts %}
-               <p>{{ username }}: {{ password }}</p> 
-            {% endfor %}
-        </section>
-        {% endif %}
+    <section>
+        <h3>Instructions and Fair use policy (please read):</h3>
+    </section>
+    <section>
+        <ul>
+            <li>You may reserve a room as an individual in groups of up to 5. Select one or more times that you want to reserve for..</li>
+            <li>Reservations are first-come, first-serve. If you are reserving as a group have all group members register for a reservation (up to 5).</li>
+            <li>As the dance room gets converted to a craft room, you will need pre-authorization/training for it. </li>
+            <li>Reservations are currently run on the honor system. If you have not reserved the space, the reservee has
+                the right to kick you out. We will be transitioning to electronic code locks on the doors.</li>
+            <li>Please do not reserve more than 5 consecutive time slots or more than 10 in a week. This is not strictly enforced but we have the right to cancel your reservations if we notice continued abuse</li>
+            <li>Reservations are for Maseeh residents only. External members can be invited as guests, but at least one reservee in the group should be a Maseeh resident. We will check residency if we suspect issues.</li>
+            <li>MHEC has the right to cancel any reservation or claim a space for Maseeh events. This is expecially important around CPW/REX. Please check your reservations 24hrs before they happen.</li>
+            <li>Cancel your reservations if you no longer plan to show up.</li>
+            <li>Please contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> with questions.</li>
+        </ul>
+    </section>
+
+    {% if (current_user == "MHEC") and loggedin %}
+    <section>
+        <h2>Users</h2>
+    </section>
+    <section>
+        {% for username, password in accounts %}
+        <p>{{ username }}: {{ password }}</p>
+        {% endfor %}
+    </section>
+    {% endif %}
 
     <section>
 
@@ -203,13 +243,14 @@
             </tr>
             {% for time, names in reservations_dict.items() %}
             <tr>
-                <td>{{ time.strftime('%Y-%m-%d %I:%M %p ET') }}</td>
+                <!-- <td>{{ time.strftime('%A %Y-%m-%d %I:%M %p ET') }}</td> -->
+                <td>{{ time.strftime('%a, %b %d %Y, %-I:%M %p ET') }}</td>
                 {% set claimed = namespace(value=False) %}
                 {% for i in range(5) %}
                 <td>
                     {% if names|length > i %}
                     {{ names[i] }}
-                    <form method="POST" style="display:inline;">
+                    <form method="POST" style="display:inline;" onsubmit="storeScrollPosition()">
                         <input type="hidden" name="reservation_id" value="{{ time }}">
                         <input type="hidden" name="user_name" value="{{ names[i] }}">
                         {% if (names[i] == current_user or current_user == "MHEC") and loggedin %}
@@ -217,8 +258,8 @@
                         {% endif %}
 
                     </form>
-                    {% elif not claimed.value  and loggedin and not names[0] == "MHEC" %}
-                    <form method="POST">
+                    {% elif not claimed.value and loggedin and not names[0] == "MHEC" %}
+                    <form method="POST" onsubmit="storeScrollPosition()">
                         <input type="hidden" name="selected_time" value="{{ time.strftime('%Y-%m-%d %H:%M:%S') }}">
                         <input type="hidden" name="user_name" value="{{ current_user }}">
                         <button class="btn btn-success" type="submit" name="reserve">Claim</button>
@@ -234,7 +275,7 @@
     <div id="footer">
         <div class="navbar">
             <center>
-                <p style="margin-bottom: 0;">MHEC</p>
+                <p style="margin-bottom: 0;">MHEC, MIT Maseeh Hall W1, 305 Memorial Drive, Cambridge MA 02139</p>
             </center>
         </div>
     </div>

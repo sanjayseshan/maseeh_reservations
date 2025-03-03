@@ -44,9 +44,10 @@ tr:nth-child(even) {
 }
 
 ul {
-    list-style-type: none;
-    padding: 0;
+    list-style-type: circle;
+    /* padding: 0; */
 }
+
 
 .flash {
     padding: 10px;
