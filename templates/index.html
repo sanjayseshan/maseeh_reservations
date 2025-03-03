@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Reservations</title>
+    <title>Maseeh Reservations</title>
     <style>
         table {
             border-collapse: collapse;
@@ -58,8 +58,16 @@
                 headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
                 body: 'user_name=' + encodeURIComponent(event.target.value)
             });
+            console.log(event.target.value)
         }
-
+        function setPassword(event) {
+            fetch('/set_password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'password=' + encodeURIComponent(event.target.value)
+            });
+            console.log(event.target.value)
+        }
         // Auto-hide messages after 3 seconds
         // setTimeout(() => {
         //     let messages = document.querySelectorAll('.message');
@@ -153,17 +161,32 @@
     <section>
         <h2>Reservations for {{ room.replace('_', ' ').title() }}</h2>
     </section>
-    <!-- <form method="POST">
-        <label for="user_name">Your Name:</label>
-        <input type="text" name="user_name" value="{{ current_user }}" required>
-        <button type="submit" name="set_name">Set Name</button>
-    </form> -->
+
     <section>
 
-        <label for="user_name">Your kerb:</label>
-        <input type="text" name="user_name" class="form-control" value="{{ current_user }}" required
-            oninput="setUserName(event)">
-    </section>
+        <form method="POST">
+            <label for="user_name">Your kerb:</label>
+            <input type="text" name="user_name" class="form-control" value="{{ current_user }}" required
+                oninput="setUserName(event)">
+            <label for="user_name">Pin:</label>
+            <input type="number" name="password" class="form-control" value="{{ password }}" required
+                oninput="setPassword(event)">
+        
+            <!-- <label for="user_name">Your Name:</label>
+            <input type="text" name="user_name" value="{{ current_user }}" required> -->
+            <button type="submit" name="set_name" class="btn btn-success">Sign in or Create account</button>
+        </form>
+
+        </section>
+
+        {% if (current_user == "MHEC") and loggedin %}
+        <section><h2>Users</h2></section>
+        <section>
+            {% for username, password in accounts %}
+               <p>{{ username }}: {{ password }}</p> 
+            {% endfor %}
+        </section>
+        {% endif %}
 
     <section>
 
@@ -189,12 +212,12 @@
                     <form method="POST" style="display:inline;">
                         <input type="hidden" name="reservation_id" value="{{ time }}">
                         <input type="hidden" name="user_name" value="{{ names[i] }}">
-                        {% if names[i] == current_user %}
+                        {% if (names[i] == current_user or current_user == "MHEC") and loggedin %}
                         <button class="btn btn-danger" type="submit" name="cancel">Cancel</button>
                         {% endif %}
 
                     </form>
-                    {% elif not claimed.value %}
+                    {% elif not claimed.value  and loggedin and not names[0] == "MHEC" %}
                     <form method="POST">
                         <input type="hidden" name="selected_time" value="{{ time.strftime('%Y-%m-%d %H:%M:%S') }}">
                         <input type="hidden" name="user_name" value="{{ current_user }}">
