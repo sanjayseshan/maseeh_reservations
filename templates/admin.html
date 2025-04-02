@@ -148,7 +148,7 @@
     </div> -->
 
     <section>
-        <h1>Reserve a Time Slot</h1>
+        <h1>Admin</h1>
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -178,23 +178,9 @@
 
 
 
-    <section>
-        <h2>Reservations for <b>
-            <!-- {{room}} -->
-            {% if (room == "craft_dance_room") %}
-            Craft Room (former dance room)
-            {% elif (room == "media_room") %}
-            Game Room (former media room)
-            {% elif (room == "kitchen") %}
-            Kitchen
-            {% elif (room == "music_room") %}
-            Music Room
-            {% endif %}
-
-
-            <!-- {{ room.replace('_', ' ').title() }} -->
-        </b></h2>
-    </section>
+    <!-- <section>
+        <h2>Admin</h2>
+    </section> -->
 
     <section>
 
@@ -213,11 +199,11 @@
         <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
 
     </section>
-
+<!-- 
     <section>
         <h3>Instructions and Fair use policy (please read):</h3>
-    </section>
-    <section>
+    </section> -->
+    <!-- <section>
         <ul>
             <li>You may reserve a room as an individual or in groups of up to 5 for 1 week at a time. Select one or more times that you want to reserve for.</li>
             <li>Reservations are first-come, first-serve. If you are reserving as a group have all group members register for a reservation (up to 5).</li>
@@ -230,80 +216,41 @@
             <li>Cancel your reservations if you no longer plan to show up.</li>
             <li>Please contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> with questions.</li>
         </ul>
+    </section> -->
+
+
+    {% if (current_user == "MHEC") and loggedin %}
+    <section>
+        <h2>Kitchen Code</h2>
     </section>
     <section>
-        <h3>Report any issues with cleanliness</h3>
+        <form method="POST" onsubmit="storeScrollPosition()">
+            <b>Current Code: </b><input type="number" class="form-control" name="code" value="{{code}}">
+            <button class="btn btn-success" type="submit" name="reserve">Update Code</button>
+        </form>
     </section>
-    <section>
-        Please use this form: <a href="https://forms.gle/cdmEx4gtCSJdbZwbA">https://forms.gle/cdmEx4gtCSJdbZwbA</a>. Please email <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> if you need quick response.
-    </section>
-<!-- 
+    {% else %}
+    <!-- <section>Error: You are not admin</section> -->
+    {% endif %}
+
+
     {% if (current_user == "MHEC") and loggedin %}
     <section>
         <h2>Users</h2>
     </section>
     <section>
         {% for username, password in accounts %}
-        <p>{{ username }}: {{ password }}</p>
+        <form method="POST" onsubmit="storeScrollPosition()">
+            <input type="hidden" name="uname" value="{{ username }}">
+            <b>{{ username }}: {{ password }}</b>
+            <button class="btn btn-danger" type="submit" name="reserve">Delete</button>
+        </form>
         {% endfor %}
     </section>
-    {% endif %} -->
+    {% else %}
+    <section><b>Error: You are not admin</b></section>
+    {% endif %}
 
-    <section>
-
-
-        <h3>Time Slots</h3>
-        <table>
-            <tr>
-                <th>Time Slot (ET)</th>
-                <th>Reservee 1</th>
-                <th>Reservee 2</th>
-                <th>Reservee 3</th>
-                <th>Reservee 4</th>
-                <th>Reservee 5</th>
-            </tr>
-            {% for time, names in reservations_dict.items() %}
-
-            <tr>
-                <!-- <td>{{ time.strftime('%A %Y-%m-%d %I:%M %p ET') }}</td> -->
-                <td>{{ time.strftime('%a, %b %d %Y, %-I:%M %p ET') }}</td>
-                {% set claimed = namespace(value=False) %}
-                {% for i in range(5) %}
-                <td>
-                    {% if names|length > i %}
-                    {{ names[i] }}
-                    <form method="POST" style="display:inline;" onsubmit="storeScrollPosition()">
-                        <input type="hidden" name="reservation_id" value="{{ time }}">
-                        <input type="hidden" name="user_name" value="{{ names[i] }}">
-                        {% if (names[i] == current_user or current_user == "MHEC") and loggedin %}
-                        <button class="btn btn-danger" type="submit" name="cancel">Cancel</button>
-                        
-
-                        {% endif %}
-
-                    </form>
-                    {% if (room == "kitchen") %}
-                    {% if (names[i] == current_user or current_user == "MHEC") and loggedin %}
-
-                    <button class="btn btn-warning" type="button" name="getcode" onclick="alert('Your kitchen code is {{code}}. This code is valid for this time slot only. Do not share.')">View Code</button>
-                    {% endif %}
-
-                    {% endif %}
-
-                    {% elif not claimed.value and loggedin and not names[0] == "MHEC" %}
-                    <form method="POST" onsubmit="storeScrollPosition()">
-                        <input type="hidden" name="selected_time" value="{{ time.strftime('%Y-%m-%d %H:%M:%S') }}">
-                        <input type="hidden" name="user_name" value="{{ current_user }}">
-                        <button class="btn btn-success" type="submit" name="reserve">Claim</button>
-                    </form>
-                    {% set claimed.value = True %}
-                    {% endif %}
-                </td>
-                {% endfor %}
-            </tr>
-            {% endfor %}
-        </table>
-    </section>
     <div id="footer">
         <div class="navbar">
             <center>

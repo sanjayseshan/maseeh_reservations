@@ -9,6 +9,10 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 
+# CODE BY SANJAY SESHAN
+
+print("may crash on first run...please run again")
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 
@@ -35,6 +39,16 @@ SessionMusic = sessionmaker(bind=music_engine)
 
 # Create a single Base for all models
 Base = declarative_base()
+
+try:
+    f = open("code.txt","r")
+    code = f.readline()
+    f.close()
+except:
+    print("could not access code.txt....creating")
+    f = open("code.txt","w+")
+    f.write("UNSET")
+    f.close()
 
 # Reservation model with extend_existing=True to handle multiple rooms sharing the same table name
 class ReservationMedia(Base):
@@ -120,39 +134,46 @@ def index():
     # Handle reservation logic
     if request.method == "POST":
         if "password" in request.form:
-            session["user_name"] = request.form["user_name"]
+            if request.form["user_name"] != "MHEC":
+                session["user_name"] = request.form["user_name"].lower()
+            else:
+                session["user_name"] = request.form["user_name"]
+
             session["password"] = request.form["password"]
 
-            username = session.get("user_name", "")
-            password = session.get("password", "")
-            # username = request.form["username"]
-            # password = request.form["password"]
-
-            db = get_db()
-            user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
-
-            if user:
-                # If user exists, check password
-                if user[2] == password:
-                    session["user"] = username
-                    flash("Logged in", "success")
-                    session["loggedin"] = True
-                    # return redirect("/")
-                else:
-                    flash("Incorrect Password", "error")
-                    # session["user_name"] = ""
-                    # session["password"] = ""
-                    session["loggedin"] = False
-                    # return "Invalid password. <a href='/auth'>Try again</a>"
+            if ("@" in session["user_name"]):
+                flash("No special characters like @ in kerb -- do not include @mit.edu", "error")
             else:
-                # If user does not exist, register them
-                db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-                db.commit()
-                session["user"] = username
-                # return redirect("/")
-                flash("Registered", "success")
-                session["loggedin"] = True
-            
+                username = session.get("user_name", "")
+                password = session.get("password", "")
+                # username = request.form["username"]
+                # password = request.form["password"]
+
+                db = get_db()
+                user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+
+                if user:
+                    # If user exists, check password
+                    if user[2] == password:
+                        session["user"] = username
+                        flash("Logged in", "success")
+                        session["loggedin"] = True
+                        # return redirect("/")
+                    else:
+                        flash("Incorrect Password", "error")
+                        # session["user_name"] = ""
+                        # session["password"] = ""
+                        session["loggedin"] = False
+                        # return "Invalid password. <a href='/auth'>Try again</a>"
+                else:
+                    # If user does not exist, register them
+                    db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+                    db.commit()
+                    session["user"] = username
+                    # return redirect("/")
+                    flash("Registered", "success")
+                    session["loggedin"] = True
+                
             
             # flash("Incorrect Password", "error")
         elif "reserve" in request.form:
@@ -230,10 +251,15 @@ def index():
         reservations_dict[slot] = [r.user_name for r in reservations if r.reserved_time.replace(tzinfo=None) == slot.replace(tzinfo=None)]
 
     # current_user = user_name
+    f = open("code.txt","r")
+    code = f.readline()
+    print(code)
+    f.close()
+
     current_user = session.get("user_name", "")
     password = session.get("password", "")
     loggedin = session.get("loggedin", "")
-    return render_template("index.html", reservations_dict=reservations_dict, current_user=current_user, password=password, room=room, loggedin=loggedin, accounts=accounts)
+    return render_template("index.html", reservations_dict=reservations_dict, current_user=current_user, password=password, room=room, loggedin=loggedin, accounts=accounts, code=code)
 
 @app.route("/set_name", methods=["POST"])
 def set_name():
@@ -249,11 +275,94 @@ def set_password():
     # flash("Your name has been set!", "success")
     return jsonify(success=True)
 
+@app.route("/admin", methods=["GET","POST"])
+def admin():
+    session["room"] = "admin"
+    room = session.get("room", "media_room")
 
-@app.route("/select_room/<room>", methods=["GET"])
+
+    db = get_db()
+
+    # Handle reservation logic
+    if request.method == "POST":
+        if "password" in request.form:
+            if request.form["user_name"] != "MHEC":
+                session["user_name"] = request.form["user_name"].lower()
+            else:
+                session["user_name"] = request.form["user_name"]
+
+            session["password"] = request.form["password"]
+
+            if ("@" in session["user_name"]):
+                flash("No special characters like @ in kerb -- do not include @mit.edu", "error")
+            else:
+                username = session.get("user_name", "")
+                password = session.get("password", "")
+                # username = request.form["username"]
+                # password = request.form["password"]
+
+                db = get_db()
+                user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+
+                if user:
+                    # If user exists, check password
+                    if user[2] == password:
+                        session["user"] = username
+                        flash("Logged in", "success")
+                        session["loggedin"] = True
+                        # return redirect("/")
+                    else:
+                        flash("Incorrect Password", "error")
+                        # session["user_name"] = ""
+                        # session["password"] = ""
+                        session["loggedin"] = False
+                        # return "Invalid password. <a href='/auth'>Try again</a>"
+                else:
+                    # If user does not exist, register them
+                    db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+                    db.commit()
+                    session["user"] = username
+                    # return redirect("/")
+                    flash("Registered", "success")
+                    session["loggedin"] = True
+                
+            
+            # flash("Incorrect Password", "error")
+        elif "uname" in request.form:
+                uname = request.form["uname"]
+                db.execute("DELETE from users WHERE username = ?", (uname,))
+                db.commit()
+                # return redirect("/")
+                flash("Deleted "+uname, "success")
+        elif "code" in request.form:
+                code = request.form["code"]
+                f = open("code.txt","w")
+                f.write(code)
+                f.close()
+                flash("Updated Kitchen code", "success")
+
+
+    f = open("code.txt","r")
+    code = f.readline()
+    print(code)
+    f.close()
+  
+            # flash("Incorrect Password", "error")
+    accounts = [(y,z) for x,y,z in db.execute("SELECT * FROM users").fetchall()]
+    print(accounts)        
+    # current_user = user_name
+    current_user = session.get("user_name", "")
+    password = session.get("password", "")
+    loggedin = session.get("loggedin", "")
+    return render_template("admin.html", current_user=current_user, password=password, room=room, loggedin=loggedin, accounts=accounts, code=code)
+
+@app.route("/select_room/<room>", methods=["GET","POST"])
 def select_room(room):
     session["room"] = room
-    return redirect("/")
+    return index()
+    # return redirect("/")
+
+    # return redirect("/")
 
 if __name__ == "__main__":
     app.run(debug=True)
