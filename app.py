@@ -115,6 +115,10 @@ eastern = pytz.timezone('America/New_York')
 def get_time_slots():
     now = datetime.now(eastern).replace(second=0, microsecond=0, minute=(datetime.now().minute // 30) * 30)
     end = now + timedelta(days=7)
+    if "user" in session and session["user"] == "MHEC":
+        end = now + timedelta(days=14)
+        now = now - timedelta(days=7)
+
 
     time_slots = []
     while now <= end:
