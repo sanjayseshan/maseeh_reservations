@@ -215,6 +215,32 @@
     </section>
 
     <section>
+        <iframe width="100%" src="https://seshan.scripts.mit.edu:444/cert/test.php" name="iframe"></iframe>
+        <script>
+            function procLogin(data) {
+                line = data.split(",")
+                kerb = line[0].split("@")[0]
+                name = line[1]
+                console.log(kerb)
+                console.log(name)
+                if (kerb != "") 
+            }
+            window.addEventListener("message", e => procLogin(e.data));
+        </script>
+
+    <form method="POST">
+        <label for="user_name">Your kerb (without @mit.edu):</label>
+        <input id="kerbauth" type="text" name="user_name" class="form-control" value="{{ current_user }}">
+        <input id="kerbbypass" type="number" name="password" class="form-control" value="{{ password }}"
+            oninput="setPassword(event)">
+
+        <!-- <label for="user_name">Your Name:</label>
+        <input type="text" name="user_name" value="{{ current_user }}" required> -->
+        <button type="submit" name="set_name" class="btn btn-success">Sign in with MIT Certificates</button>
+    </form>
+    </section>
+
+    <section>
         <h3>Instructions and Fair use policy (please read):</h3>
     </section>
     <section>
@@ -270,8 +296,9 @@
     </section>
     {% endif %} -->
 
-    <section>
 
+
+    <section>
 
         <h3>Time Slots     {% if (room == "craft_dance_room") %}
             Craft Room (former dance room)

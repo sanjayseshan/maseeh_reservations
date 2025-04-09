@@ -251,9 +251,12 @@ def index():
         session_db = SessionMusic()
         reservations = session_db.query(ReservationMusic).all()
 
-    for slot in time_slots:
-        reservations_dict[slot] = [r.user_name for r in reservations if r.reserved_time.replace(tzinfo=None) == slot.replace(tzinfo=None)]
-
+    try:
+        for slot in time_slots:
+            reservations_dict[slot] = [r.user_name for r in reservations if r.reserved_time.replace(tzinfo=None) == slot.replace(tzinfo=None)]
+    except:
+        print("error")
+        pass
     # current_user = user_name
     f = open("code.txt","r")
     code = f.readline()
