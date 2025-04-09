@@ -180,6 +180,12 @@ def index():
                 
             
             # flash("Incorrect Password", "error")
+        elif "kerb_user_name" in request.form:
+            session["user_name"] = request.form["kerb_user_name"]
+            session["user"] = session["user_name"]
+            session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
+            flash("Logged in", "success")
+            session["loggedin"] = True
         elif "reserve" in request.form:
             user_name = session.get("user_name", request.form["user_name"])
             # password = session.get("password", request.form["password"])
@@ -267,6 +273,15 @@ def index():
     password = session.get("password", "")
     loggedin = session.get("loggedin", "")
     return render_template("index.html", reservations_dict=reservations_dict, current_user=current_user, password=password, room=room, loggedin=loggedin, accounts=accounts, code=code)
+
+@app.route("/cert_set_name", methods=["POST"])
+def cert_set_name():
+    session["user_name"] = request.form["user_name"]
+    session["user"] = session["user_name"]
+    flash("Logged in", "success")
+    session["loggedin"] = True
+    # flash("Your name has been set!", "success")
+    return jsonify(success=True)
 
 @app.route("/set_name", methods=["POST"])
 def set_name():
