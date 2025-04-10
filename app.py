@@ -185,15 +185,19 @@ def index():
             url = "https://seshan.scripts.mit.edu/certdec.php?auth="+toverify
             page = urlopen(url)
             html_bytes = page.read()
-            html = html_bytes.decode("utf-8")
-            print(html.strip())
-            ret = html.strip()
-            if "@MIT.EDU" in ret:
-                session["user_name"] = ret.split("@MIT.EDU")[0]
-                session["user"] = session["user_name"]
-                session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
-                flash("Logged in with MIT Certificates for "+ret.split(",")[1], "success")
-                session["loggedin"] = True
+            try:
+                html = html_bytes.decode("utf-8")
+                print(html.strip())
+                ret = html.strip()
+                if "@MIT.EDU" in ret:
+                    session["user_name"] = ret.split("@MIT.EDU")[0]
+                    session["user"] = session["user_name"]
+                    session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
+                    flash("Logged in with MIT Certificates for "+ret.split(",")[1], "success")
+                    session["loggedin"] = True
+            except:
+                print("ERROR CERT")
+                pass
         elif "reserve" in request.form:
             user_name = session.get("user_name", request.form["user_name"])
             # password = session.get("password", request.form["password"])
