@@ -8,7 +8,7 @@ from dateutil import parser
 import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
-
+from urllib.request import urlopen
 # CODE BY SANJAY SESHAN
 
 print("may crash on first run...please run again")
@@ -181,11 +181,19 @@ def index():
             
             # flash("Incorrect Password", "error")
         elif "kerb_user_name" in request.form:
-            session["user_name"] = request.form["kerb_user_name"]
-            session["user"] = session["user_name"]
-            session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
-            flash("Logged in", "success")
-            session["loggedin"] = True
+            toverify = request.form["kerb_user_name"]
+            url = "https://seshan.scripts.mit.edu/certdec.php?auth="+toverify
+            page = urlopen(url)
+            html_bytes = page.read()
+            html = html_bytes.decode("utf-8")
+            print(html.strip())
+            ret = html.strip()
+            if "@MIT.EDU" in ret:
+                session["user_name"] = ret.split("@MIT.EDU")[0]
+                session["user"] = session["user_name"]
+                session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
+                flash("Logged in with MIT Certificates for "+ret.split(",")[1], "success")
+                session["loggedin"] = True
         elif "reserve" in request.form:
             user_name = session.get("user_name", request.form["user_name"])
             # password = session.get("password", request.form["password"])

@@ -220,32 +220,34 @@
         </form>
         <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
         <p>Or...(recommended)</p>
-        <button type="button" onclick="document.getElementById('kerbauth').style.display = 'inline'; document.getElementById('ifr').src='https://seshan.scripts.mit.edu:444/cert/test.php'" name="set_name" class="btn btn-success">Sign in with MIT Certificates</button>
+        <button type="button" onclick="document.getElementById('kerbauth').style.display = 'inline'; document.getElementById('ifr').src='https://seshan.scripts.mit.edu:444/cert/testenc.php'" name="set_name" class="btn btn-success">Sign in with MIT Certificates</button>
 
     </section>
 
     <section id="kerbauth" style="display: none;">
-        <iframe width="100%" src="" name="iframe" id="ifr"></iframe>
+        <iframe style="background-color: white !important;" width="100%" src="" name="iframe" id="ifr"></iframe>
         <script>
             function procLogin(data) {
-                line = data.split(",")
-                kerb = line[0].split("@")[0]
-                name = line[1]
-                console.log(kerb)
-                console.log(name)
-                if (kerb != "") {
-                    document.getElementById("kerb_user_name").value = kerb
-                    document.getElementById("kerb_user_form").submit()
-                }
+                // line = data.split(",")
+                // kerb = line[0].split("@")[0]
+                // name = line[1]
+                // console.log(kerb)
+                // console.log(name)
+                // if (kerb != "") {
+                //     document.getElementById("kerb_user_name").value = kerb
+                //     document.getElementById("kerb_user_form").submit()
+                // }
+                document.getElementById("kerb_user_name").value = data
+                document.getElementById("kerb_user_form").submit()
                 // certSetUserName(kerb);
             }
             window.addEventListener("message", e => procLogin(e.data));
         </script>
 
-        <form method="POST" id="kerb_user_form" style="display: none;">
+        <form method="POST" id="kerb_user_form" style="display: inline;">
             <input type="text" id="kerb_user_name" name="kerb_user_name" class="form-control">
 
-            <button   id="kerb_user_submit" type="submit" name="set_name" class="btn btn-success">Sign in or Register</button>
+            <button   id="kerb_user_submit" type="submit" name="set_name" class="btn btn-success">Sign in with cert</button>
         </form>
 
 
