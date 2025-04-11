@@ -17,6 +17,7 @@ print("may crash on first run...please run again")
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['OIDC_CLIENT_SECRETS'] = './client_secrets.json'
+app.config['AUTHORIZE_PATH'] = '/oidc-response'
 
 oidc = OpenIDConnect(app)
 
