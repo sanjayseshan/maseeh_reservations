@@ -168,7 +168,7 @@ def index():
     if (("loggedin" not in session or session["loggedin"] == False) and g.oidc_user.logged_in):
         session["user_name"] = g.oidc_user.profile.get('email').split("@mit.edu")[0]
         session["user"] = session["user_name"]
-        session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
+        session["password"] = "KERBEROS TOUCHSTONE AUTHENTICATION"
         flash("Logged in with MIT Touchstone for "+g.oidc_user.profile.get('email'), "success")
         session["loggedin"] = True
         # return 'Welcome %s' % g.oidc_user.profile.get('email')
