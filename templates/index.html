@@ -203,9 +203,27 @@
             <!-- {{ room.replace('_', ' ').title() }} -->
         </b></h2>
     </section>
-
     <section>
+        <button type="button" onclick="document.getElementById('kerbauth').style.display = 'block'; document.getElementById('ifr').src='https://seshan.scripts.mit.edu:444/cert/testenc.php'" name="set_name" class="btn btn-success">Sign in with MIT Certificates</button>
+        <a href="/login" class="btn btn-success">Log in with MIT Touchstone</a>
 
+        <button type="button" onclick="document.getElementById('oldauth').style.display = 'block';"  class="btn btn-success">Sign in with Old or Admin login</button>
+
+        <form method="POST">
+            <input style="display: none;" type="text" name="logout" class="form-control" value="True">
+            <button type="submit" name="set_name" class="btn btn-danger">Log out</button>
+        </form>
+
+        <p><b>Logged in as:</b><br>
+            Username: {{ current_user }}<br>
+            Password: {{ password }}
+        </p>
+
+
+    </section>
+
+    <section id="oldauth" style="display: none;">
+        <p>Old login is not recommended. Please use a more secure option.</p>
         <form method="POST">
             <label for="user_name">Your kerb (without @mit.edu):</label>
             <input type="text" name="user_name" class="form-control" value="{{ current_user }}" required
@@ -219,9 +237,7 @@
             <button type="submit" name="set_name" class="btn btn-success">Sign in or Register</button>
         </form>
         <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
-        <p>Or...(recommended)</p>
-        <button type="button" onclick="document.getElementById('kerbauth').style.display = 'inline'; document.getElementById('ifr').src='https://seshan.scripts.mit.edu:444/cert/testenc.php'" name="set_name" class="btn btn-success">Sign in with MIT Certificates</button>
-        <a href="/login" class="btn btn-success">Log in with MIT Touchstone</a>
+        <!-- <p>Or...(recommended)</p> -->
 
     </section>
 

@@ -220,6 +220,12 @@ def index():
                 
             
             # flash("Incorrect Password", "error")
+        if "logout" in request.form:
+            session["user_name"] = ""
+            session["user"] =""
+            session["password"] = ""
+            flash("Logged out", "success")
+            session["loggedin"] = False
         elif "kerb_user_name" in request.form:
             toverify = request.form["kerb_user_name"]
             url = "https://seshan.scripts.mit.edu/certdec.php?auth="+toverify
