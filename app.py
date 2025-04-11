@@ -165,7 +165,7 @@ def index():
     accounts = [(y,z) for x,y,z in db.execute("SELECT * FROM users").fetchall()]
     print(accounts)
 
-    if ("loggedin" not in session or session["loggedin"] == False) and g.oidc_user.logged_in:
+    if (("loggedin" not in session or session["loggedin"] == False) and g.oidc_user.logged_in) or (g.oidc_user.logged_in != session["user"]):
         session["user_name"] = g.oidc_user.profile.get('email').split("@mit.edu")[0]
         session["user"] = session["user_name"]
         session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
