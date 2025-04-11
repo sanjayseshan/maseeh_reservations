@@ -211,12 +211,14 @@ def index():
                         # return "Invalid password. <a href='/auth'>Try again</a>"
                 else:
                     # If user does not exist, register them
-                    db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-                    db.commit()
-                    session["user"] = username
-                    # return redirect("/")
-                    flash("Registered", "success")
-                    session["loggedin"] = True
+                    flash("User does not exist", "error")
+                    session["loggedin"] = False
+                    # db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+                    # db.commit()
+                    # session["user"] = username
+                    # # return redirect("/")
+                    # flash("Registered", "success")
+                    # session["loggedin"] = True
                 
             
             # flash("Incorrect Password", "error")
@@ -398,13 +400,20 @@ def admin():
                         session["loggedin"] = False
                         # return "Invalid password. <a href='/auth'>Try again</a>"
                 else:
-                    # If user does not exist, register them
-                    db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
-                    db.commit()
-                    session["user"] = username
-                    # return redirect("/")
-                    flash("Registered", "success")
-                    session["loggedin"] = True
+
+                    if ( session["loggedin"] and session["user"] == "MHEC"):
+                        db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+                        db.commit()
+                        session["user"] = username
+                        # return redirect("/")
+                        flash("Registered", "success")
+                        session["loggedin"] = True
+                    else:
+                        # If user does not exist, register them
+                        flash("User does not exist", "error")
+                        # session["user_name"] = ""
+                        # session["password"] = ""
+                        session["loggedin"] = False
                 
             
             # flash("Incorrect Password", "error")

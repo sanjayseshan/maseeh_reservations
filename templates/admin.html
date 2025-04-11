@@ -194,7 +194,7 @@
 
             <!-- <label for="user_name">Your Name:</label>
             <input type="text" name="user_name" value="{{ current_user }}" required> -->
-            <button type="submit" name="set_name" class="btn btn-success">Sign in or Register</button>
+            <button type="submit" name="set_name" class="btn btn-success">Sign in (or Register if admin)</button>
         </form>
         <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
 
@@ -246,6 +246,12 @@
             <button class="btn btn-danger" type="submit" name="reserve">Delete</button>
         </form>
         {% endfor %}
+    </section>
+    <section>
+        <h2>Reservations</h2>
+    </section>
+    <section>
+        <p>To view or edit reservations for the last week to two weeks from now, please view the other tabs, now that you are logged in as admin.</p>
     </section>
     {% else %}
     <section><b>Error: You are not admin</b></section>

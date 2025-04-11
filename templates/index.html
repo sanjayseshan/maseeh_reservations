@@ -234,7 +234,7 @@
 
             <!-- <label for="user_name">Your Name:</label>
             <input type="text" name="user_name" value="{{ current_user }}" required> -->
-            <button type="submit" name="set_name" class="btn btn-success">Sign in or Register</button>
+            <button type="submit" name="set_name" class="btn btn-success">Sign in</button>
         </form>
         <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
         <!-- <p>Or...(recommended)</p> -->
@@ -349,6 +349,8 @@
                 <th>Reservee 4</th>
                 <th>Reservee 5</th>
             </tr>
+            {% set first = namespace(value=False) %}
+            
             {% for time, names in reservations_dict.items() %}
 
             <tr>
@@ -362,7 +364,7 @@
                     <form method="POST" style="display:inline;" onsubmit="storeScrollPosition()">
                         <input type="hidden" name="reservation_id" value="{{ time }}">
                         <input type="hidden" name="user_name" value="{{ names[i] }}">
-                        {% if (names[i] == current_user or current_user == "MHEC") and loggedin %}
+                        {% if (names[i] == current_user or current_user == "MHEC") and loggedin and first.value %}
                         <button class="btn btn-danger" type="submit" name="cancel">Cancel</button>
                         
 
@@ -370,7 +372,7 @@
 
                     </form>
                     {% if (room == "kitchen") %}
-                    {% if (names[i] == current_user or current_user == "MHEC") and loggedin %}
+                    {% if (names[i] == current_user or current_user == "MHEC") and loggedin and not first.value %}
 
                     <button class="btn btn-warning" type="button" name="getcode" onclick="alert('Your kitchen code is {{code}}. This code is valid for this time slot only. Do not share.')">View Code</button>
                     {% endif %}
@@ -388,6 +390,8 @@
                 </td>
                 {% endfor %}
             </tr>
+            {% set first.value = True %}
+
             {% endfor %}
         </table>
     </section>
