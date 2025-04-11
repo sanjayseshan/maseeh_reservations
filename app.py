@@ -18,7 +18,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['OIDC_CLIENT_SECRETS'] = './client_secrets.json'
 app.config['AUTHORIZE_PATH'] = '/oidc-response'
-
+app.config['OIDC_AUTHORIZATION_URL'] = '/oidc-response'
+app.config['OIDC_TOKEN_ENDPOINT_AUTH_METHOD'] = 'client_secret_basic'
 oidc = OpenIDConnect(app)
 
 # Define database URIs for each room
