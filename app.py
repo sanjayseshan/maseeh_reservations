@@ -9,12 +9,16 @@ import sqlite3
 from werkzeug.security import generate_password_hash, check_password_hash
 
 from urllib.request import urlopen
+from flask_oidc import OpenIDConnect
 # CODE BY SANJAY SESHAN
 
 print("may crash on first run...please run again")
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'your_secret_key'
+app.config['OIDC_CLIENT_SECRETS'] = './client_secrets.json'
+
+oidc = OpenIDConnect(app)
 
 # Define database URIs for each room
 MEDIA_ROOM_DB_URI = 'sqlite:///media_room.db'
@@ -126,6 +130,29 @@ def get_time_slots():
         now += timedelta(minutes=30)
     
     return time_slots
+
+
+@app.route('/main')
+def index2():
+    if oidc.user_loggedin:
+        return 'Welcome %s' % session["oidc_auth_profile"].get('email')
+    else:
+        return 'Not logged in'
+
+@app.route('/login')
+@oidc.require_login
+def login():
+    return 'Welcome %s' % session["oidc_auth_profile"].get('email')
+
+@app.route('/alt')
+def alternative():
+    # This uses the user instance at g.oidc_user instead
+    if g.oidc_user.logged_in:
+        return 'Welcome %s' % g.oidc_user.profile.get('email')
+    else:
+        return 'Not logged in'
+
+
 
 @app.route("/", methods=["GET", "POST"])
 def index():
