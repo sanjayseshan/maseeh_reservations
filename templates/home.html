@@ -60,6 +60,14 @@
             // });
             // console.log(event.target.value)
         }
+        function certSetUserName(kerb) {
+            fetch('/cert_set_name', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: 'user_name=' + encodeURIComponent(kerb)
+            });
+            console.log(kerb)
+        }
         function setPassword(event) {
         //     fetch('/set_password', {
         //         method: 'POST',
@@ -150,7 +158,7 @@
     </div> -->
 
     <section>
-        <h1>Admin</h1>
+        <h1>Home</h1>
 
         <!-- Flash Messages -->
         {% with messages = get_flashed_messages(with_categories=true) %}
@@ -180,12 +188,30 @@
 
 
 
-    <!-- <section>
-        <h2>Admin</h2>
-    </section> -->
-
     <section>
+        <h2>Reservations</h2>
+    </section>
+    <section>
+        <button type="button" onclick="document.getElementById('kerbauth').style.display = 'block'; document.getElementById('ifr').src='https://seshan.scripts.mit.edu:444/cert/testenc.php'" name="set_name" class="btn btn-success">Sign in with MIT Certificates</button>
+        <a href="/login" class="btn btn-success">Log in with MIT Touchstone</a>
 
+        <button type="button" onclick="document.getElementById('oldauth').style.display = 'block';"  class="btn btn-success">Sign in with Old or Admin login</button>
+
+        <form method="POST">
+            <input style="display: none;" type="text" name="logout" class="form-control" value="True">
+            <button type="submit" name="set_name" class="btn btn-danger">Log out</button>
+        </form>
+
+        <p><b>Logged in as:</b><br>
+            Username: {{ current_user }}<br>
+            Password: {{ password }}
+        </p>
+
+
+    </section>
+
+    <section id="oldauth" style="display: none;">
+        <p>Old login is not recommended. Please use a more secure option.</p>
         <form method="POST">
             <label for="user_name">Your kerb (without @mit.edu):</label>
             <input type="text" name="user_name" class="form-control" value="{{ current_user }}" required
@@ -196,69 +222,109 @@
 
             <!-- <label for="user_name">Your Name:</label>
             <input type="text" name="user_name" value="{{ current_user }}" required> -->
-            <button type="submit" name="set_name" class="btn btn-success">Sign in (or Register if admin)</button>
+            <button type="submit" name="set_name" class="btn btn-success">Sign in</button>
         </form>
         <p>Please write down your pin code after you make it. This pin is saved for life. You will have to contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a>/MHEC if you forgot your pin. Pins are not stored encrypted so do not use a valuable identifier. </p>
+        <!-- <p>Or...(recommended)</p> -->
 
     </section>
-<!-- 
+
+    <section id="kerbauth" style="display: none;">
+        <iframe style="background-color: white !important;" width="80%" src="" name="iframe" id="ifr"></iframe>
+        <script>
+            function procLogin(data) {
+                // line = data.split(",")
+                // kerb = line[0].split("@")[0]
+                // name = line[1]
+                // console.log(kerb)
+                // console.log(name)
+                // if (kerb != "") {
+                //     document.getElementById("kerb_user_name").value = kerb
+                //     document.getElementById("kerb_user_form").submit()
+                // }
+                document.getElementById("kerb_user_name").value = data
+                document.getElementById("kerb_user_form").submit()
+                // certSetUserName(kerb);
+            }
+            window.addEventListener("message", e => procLogin(e.data));
+        </script>
+
+        <form method="POST" id="kerb_user_form" style="display: none;">
+            <input type="text" id="kerb_user_name" name="kerb_user_name" class="form-control">
+
+            <button   id="kerb_user_submit" type="submit" name="set_name" class="btn btn-success">Sign in with cert</button>
+        </form>
+
+
+    </section>
+
     <section>
         <h3>Instructions and Fair use policy (please read):</h3>
-    </section> -->
-    <!-- <section>
+    </section>
+    <section>
         <ul>
             <li>You may reserve a room as an individual or in groups of up to 5 for 1 week at a time. Select one or more times that you want to reserve for.</li>
             <li>Reservations are first-come, first-serve. If you are reserving as a group have all group members register for a reservation (up to 5).</li>
             <li>As the dance room gets converted to a craft room, you will need pre-authorization/training for it. </li>
             <li>Reservations are currently run on the honor system. If you have not reserved the space, the reservee has
-                the right to kick you out. We will start adding electronic code locks on the doors in the coming weeks (not implemented right now).</li>
+                the right to kick you out. The kitchen requires an electronic code that will be generated by this system.</li>
             <li>Please do not reserve more than 5 consecutive time slots or more than 10 in a week. This is not strictly enforced but we have the right to cancel your reservations if we notice continued abuse</li>
             <li>Reservations are for Maseeh residents only. External members can be invited as guests, but at least one reservee in the group should be a Maseeh resident. We will check residency if we suspect issues.</li>
             <li>MHEC has the right to cancel any reservation or claim a space for Maseeh events. This is expecially important around CPW/REX. Please check your reservations 24hrs before they happen.</li>
             <li>Cancel your reservations if you no longer plan to show up.</li>
             <li>Please contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> with questions.</li>
+            <li>You do not need to make a reservation in advance. You can make a reservation during the current time slot if there is an opening.</li>
+            <li>Courtyard and PDR reservations are only through emailing MHEC <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> and Jhon Gonzalez <a href="mailto:jhonfg@mit.edu">jhonfg@mit.edu</a>.</li>
         </ul>
-    </section> -->
-
-
-    {% if (current_user == "MHEC") and loggedin %}
-    <section>
-        <h2>Kitchen Code</h2>
     </section>
     <section>
-        <form method="POST" onsubmit="storeScrollPosition()">
-            <b>Current Code: </b><input type="number" class="form-control" name="code" value="{{code}}">
-            <button class="btn btn-success" type="submit" name="reserve">Update Code</button>
-        </form>
+        <h3>Report any issues with cleanliness</h3>
     </section>
-    {% else %}
-    <!-- <section>Error: You are not admin</section> -->
+    <section>
+        Please use this form: <a href="https://forms.gle/cdmEx4gtCSJdbZwbA">https://forms.gle/cdmEx4gtCSJdbZwbA</a>. Please email <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> if you need quick response.
+    </section>
+
+    {% if (room == "craft_dance_room") %}
+
+    <section><h3>Important: Requesting Access to Craft Room</h3></section>
+    <section>
+        <p><b>The Craft Room requires pre-authorization</b> before you can access the room via reservation. You must fill in this form: <a href="https://forms.gle/RZpvPAgcnGSy8CPk9">https://forms.gle/RZpvPAgcnGSy8CPk9</a>.</p>
+
+        <p>The deadline was Wednesday, April 2, 2025, at noon, but we will continue accepting responses that might get added at a mid-semester basis. However, we cannot guarantee submissions after April 2 will get access. Please contact <a href="mailto:maseeh-reservations-chair@mit.edu">maseeh-reservations-chair@mit.edu</a> if you need access urgently. If you filled in the form before the deadline and cannot access the room by tap access after April 5, 2025, please contact us.</p>
+    </section>
     {% endif %}
 
+    {% if (room == "kitchen") %}
 
+    <section><h3>Important: Accessing the Kitchen</h3></section>
+    <section>
+        <p>Once you make a reservation and log in, you will be able to see a "View Code" button. This is a unique code for your time sessions this week. It will be changed frequently so check before you enter the room. Type this code into the keypad on the door to gain access. Please contact us if you have issues.</p>
+        <p>You can make a reservation for the current slot to get the code if you want access to cook, use the fridge, or the sinks. We use this system only to keep track of entrances and exits due to make sure the area is kept clean. This should never cause an issue where you do not get to access the room in a timely fashion.</p>
+    </section>
+    {% endif %}
+
+<!-- 
     {% if (current_user == "MHEC") and loggedin %}
     <section>
         <h2>Users</h2>
     </section>
     <section>
         {% for username, password in accounts %}
-        <form method="POST" onsubmit="storeScrollPosition()">
-            <input type="hidden" name="uname" value="{{ username }}">
-            <b>{{ username }}: {{ password }}</b>
-            <button class="btn btn-danger" type="submit" name="reserve">Delete</button>
-        </form>
+        <p>{{ username }}: {{ password }}</p>
         {% endfor %}
     </section>
-    <section>
-        <h2>Reservations</h2>
-    </section>
-    <section>
-        <p>To view or edit reservations for the last week to two weeks from now, please view the other tabs, now that you are logged in as admin.</p>
-    </section>
-    {% else %}
-    <section><b>Error: You are not admin</b></section>
-    {% endif %}
+    {% endif %} -->
 
+
+
+    <section>
+
+        <h3>Time Slots 
+</h3>
+
+<b>Select a room in the topbar</b>
+      
+    </section>
     <div id="footer">
         <div class="navbar">
             <center>

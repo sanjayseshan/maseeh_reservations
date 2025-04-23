@@ -19,7 +19,7 @@ app.config['SECRET_KEY'] = 'your_secret_key'
 app.config['OIDC_CLIENT_SECRETS'] = './client_secrets.json'
 app.config['AUTHORIZE_PATH'] = '/oidc-response'
 app.config['OIDC_CALLBACK_ROUTE'] = '/oidc-response'
-app.config['OVERWRITE_REDIRECT_URI'] = 'http://maseeh1lounge.mit.edu/oidc-response'
+app.config['OVERWRITE_REDIRECT_URI'] = 'https://maseeh1lounge.mit.edu/oidc-response'
 app.config['OIDC_INTROSPECTION_AUTH_METHOD'] = 'client_secret_basic'
 oidc = OpenIDConnect(app)
 
@@ -158,6 +158,184 @@ def alternative():
 
 
 @app.route("/", methods=["GET", "POST"])
+def index_main():
+    room = session.get("room", "media_room")
+
+    db = get_db()
+    accounts = [(y,z) for x,y,z in db.execute("SELECT * FROM users").fetchall()]
+    # print(accounts)
+
+    if (("loggedin" not in session or session["loggedin"] == False) and g.oidc_user.logged_in):
+        session["user_name"] = g.oidc_user.profile.get('email').split("@mit.edu")[0]
+        session["user"] = session["user_name"]
+        session["password"] = "KERBEROS TOUCHSTONE AUTHENTICATION"
+        flash("Logged in with MIT Touchstone for "+g.oidc_user.profile.get('email'), "success")
+        session["loggedin"] = True
+        # return 'Welcome %s' % g.oidc_user.profile.get('email')
+    # else:
+    #     return 'Not logged in'
+
+    # Handle reservation logic
+    if request.method == "POST":
+        if "password" in request.form:
+            if request.form["user_name"] != "MHEC":
+                session["user_name"] = request.form["user_name"].lower()
+            else:
+                session["user_name"] = request.form["user_name"]
+
+            session["password"] = request.form["password"]
+
+            if ("@" in session["user_name"]):
+                flash("No special characters like @ in kerb -- do not include @mit.edu", "error")
+            else:
+                username = session.get("user_name", "")
+                password = session.get("password", "")
+                # username = request.form["username"]
+                # password = request.form["password"]
+
+                db = get_db()
+                user = db.execute("SELECT * FROM users WHERE username = ?", (username,)).fetchone()
+
+                if user:
+                    # If user exists, check password
+                    if user[2] == password:
+                        session["user"] = username
+                        flash("Logged in", "success")
+                        session["loggedin"] = True
+                        # return redirect("/")
+                    else:
+                        flash("Incorrect Password", "error")
+                        # session["user_name"] = ""
+                        # session["password"] = ""
+                        session["loggedin"] = False
+                        # return "Invalid password. <a href='/auth'>Try again</a>"
+                else:
+                    # If user does not exist, register them
+                    flash("User does not exist", "error")
+                    session["loggedin"] = False
+                    # db.execute("INSERT INTO users (username, password) VALUES (?, ?)", (username, password))
+                    # db.commit()
+                    # session["user"] = username
+                    # # return redirect("/")
+                    # flash("Registered", "success")
+                    # session["loggedin"] = True
+                
+            
+            # flash("Incorrect Password", "error")
+        if "logout" in request.form:
+            session["user_name"] = ""
+            session["user"] =""
+            session["password"] = ""
+            flash("Logged out", "success")
+            session["loggedin"] = False
+        elif "kerb_user_name" in request.form:
+            toverify = request.form["kerb_user_name"]
+            url = "https://seshan.scripts.mit.edu/certdec.php?auth="+toverify
+            page = urlopen(url)
+            html_bytes = page.read()
+            try:
+                html = html_bytes.decode("utf-8")
+                print(html.strip())
+                ret = html.strip()
+                if "@MIT.EDU" in ret:
+                    session["user_name"] = ret.split("@MIT.EDU")[0]
+                    session["user"] = session["user_name"]
+                    session["password"] = "KERBEROS CERTIFICATE AUTHENTICATION"
+                    flash("Logged in with MIT Certificates for "+ret.split(",")[1], "success")
+                    session["loggedin"] = True
+            except:
+                print("ERROR CERT")
+                pass
+        elif "reserve" in request.form:
+            user_name = session.get("user_name", request.form["user_name"])
+            # password = session.get("password", request.form["password"])
+            selected_time_et = datetime.strptime(request.form["selected_time"], '%Y-%m-%d %H:%M:%S')
+            selected_time_et = eastern.localize(selected_time_et)
+
+            if room == "media_room":
+                session_db = SessionMedia()
+                reservation_model = ReservationMedia
+            elif room == "craft_dance_room":
+                session_db = SessionCraft()
+                reservation_model = ReservationCraft
+            elif room == "kitchen":
+                session_db = SessionKitchen()
+                reservation_model = ReservationKitchen
+            elif room == "music_room":
+                session_db = SessionMusic()
+                reservation_model = ReservationMusic
+
+            # Check if the reservation already exists or is full
+            if session_db.query(reservation_model).filter_by(reserved_time=selected_time_et, user_name=user_name).first():
+                flash("You already booked this slot!", "error")
+            elif session_db.query(reservation_model).filter_by(reserved_time=selected_time_et).count() >= 5:
+                flash("This time slot is full!", "error")
+            else:
+                new_reservation = reservation_model(reserved_time=selected_time_et, user_name=user_name)
+                session_db.add(new_reservation)
+                session_db.commit()
+                flash("Reservation successful!", "success")
+                return redirect("/")
+
+        elif "cancel" in request.form:
+            reservation_time = parser.parse(request.form["reservation_id"])
+            user_name = request.form["user_name"]
+            # password = request.form["password"]
+
+            if room == "media_room":
+                session_db = SessionMedia()
+                reservation_model = ReservationMedia
+            elif room == "craft_dance_room":
+                session_db = SessionCraft()
+                reservation_model = ReservationCraft
+            elif room == "kitchen":
+                session_db = SessionKitchen()
+                reservation_model = ReservationKitchen
+            elif room == "music_room":
+                session_db = SessionMusic()
+                reservation_model = ReservationMusic
+
+            reservation = session_db.query(reservation_model).filter_by(reserved_time=reservation_time, user_name=user_name).first()
+            
+            if reservation:
+                session_db.delete(reservation)
+                session_db.commit()
+                flash(f"Reservation for {user_name} at {reservation_time.strftime('%Y-%m-%d %I:%M %p ET')} canceled!", "success")
+
+    time_slots = get_time_slots()
+    reservations_dict = {}
+    if room == "media_room":
+        session_db = SessionMedia()
+        reservations = session_db.query(ReservationMedia).all()
+    elif room == "craft_dance_room":
+        session_db = SessionCraft()
+        reservations = session_db.query(ReservationCraft).all()
+    elif room == "kitchen":
+        session_db = SessionKitchen()
+        reservations = session_db.query(ReservationKitchen).all()
+    elif room == "music_room":
+        session_db = SessionMusic()
+        reservations = session_db.query(ReservationMusic).all()
+
+    try:
+        for slot in time_slots:
+            reservations_dict[slot] = [r.user_name for r in reservations if r.reserved_time.replace(tzinfo=None) == slot.replace(tzinfo=None)]
+    except:
+        print("error")
+        pass
+    # current_user = user_name
+    f = open("code.txt","r")
+    code = f.readline()
+    print(code)
+    f.close()
+
+    current_user = session.get("user_name", "")
+    password = session.get("password", "")
+    loggedin = session.get("loggedin", "")
+    return render_template("home.html", reservations_dict=reservations_dict, current_user=current_user, password=password, room=room, loggedin=loggedin, accounts=accounts, code=code)
+
+
+@app.route("/room", methods=["GET", "POST"])
 def index():
     room = session.get("room", "media_room")
 
