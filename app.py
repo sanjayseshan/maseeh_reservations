@@ -275,7 +275,7 @@ def index_main():
                 session_db.add(new_reservation)
                 session_db.commit()
                 flash("Reservation successful!", "success")
-                return redirect("/")
+                # return redirect("/")
 
         elif "cancel" in request.form:
             reservation_time = parser.parse(request.form["reservation_id"])
